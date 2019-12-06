@@ -5,7 +5,8 @@ import 'package:category_widget/category.dart';
 import 'package:category_widget/unit.dart';
 import 'package:category_widget/backdrop.dart';
 
-
+//Este es el home de la aplicacion
+//Es un header y una lista de [Category]
 class CategoryRoute extends StatefulWidget{
   const CategoryRoute();
 
@@ -16,6 +17,7 @@ class CategoryRoute extends StatefulWidget{
 class _CategoryRouteState extends State<CategoryRoute> {
   Category _defaultCategory;
   Category _currentCategory;
+
   final _categories =<Category>[];
 
   static const _categoryNames = <String>[
@@ -85,13 +87,16 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
+  //funcion to call when a Category is tapped.
   void _onCategoryTap(Category category){
     setState((){
       _currentCategory = category;
     });
   }
 
-  Widget _buildCategoryWidgets(){
+  //Makes the correct number of rows for the list view
+  Widget _buildCategoryWidgets(Orientation deviceOrientation){
+    if(deviceOrientation == Orientation.portrait){
     return ListView.builder(
         itemBuilder: (BuildContext context, int index){
           return CategoryTile(
@@ -101,8 +106,21 @@ class _CategoryRouteState extends State<CategoryRoute> {
       },
       itemCount: _categories.length,
     );
+    }else{
+      return GridView.count(
+        crossAxisCount: 2,
+        childAspectRatio: 3.0,
+        children: _categories.map((Category c){
+          return CategoryTile(
+            category: c,
+            onTap: _onCategoryTap,
+          );
+        }).toList(),
+      );
+    }
   }
 
+//Return a list of mock
   List<Unit> _retrieveUnitList(String categoryName){
     return List.generate(10,(int i){
       i += 1;
@@ -115,13 +133,14 @@ class _CategoryRouteState extends State<CategoryRoute> {
 
   @override
   Widget build(BuildContext context) {
-   final listView = Container(
+    assert(debugCheckHasMediaQuery(context));
+   final listView = Padding(
      padding: EdgeInsets.only(
        left: 8.0,
        right: 8.0,
        bottom: 48.0,
      ),
-     child: _buildCategoryWidgets(),
+     child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
    );
 
    return Backdrop(

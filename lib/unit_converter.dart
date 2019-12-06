@@ -23,6 +23,7 @@ class _UnitConverterState extends State<UnitConverter> {
   String _convertedValue = '';
   List<DropdownMenuItem> _unitMenuItems;
   bool _showValidationError = false;
+  final _inputKey = GlobalKey(debugLabel: 'inputText');
 
   @override
   void initState() {
@@ -34,13 +35,15 @@ class _UnitConverterState extends State<UnitConverter> {
   @override
   void didUpdateWidget(UnitConverter old) {
     super.didUpdateWidget(old);
-
+    //DropdownMenuItem update the units when nwe switch Categories
     if (old.category != widget.category) {
       _createDropdownMenuItems();
       _setDefaults();
     }
   }
 
+  //Creawtes fresh list of DropdownMenuItem widgets,
+  //given a list of Units
   void _createDropdownMenuItems() {
     var newItems = <DropdownMenuItem>[];
     for (var unit in widget.category.units) {

@@ -76,6 +76,8 @@ class _BackdropTitle extends AnimatedWidget {
       style: Theme.of(context).primaryTextTheme.title,
       softWrap: false,
       overflow: TextOverflow.ellipsis,
+      //Animacion entre backTitle y fronTitle
+      //Hace una animacion suave entre los dos textos
       child: Stack(
         children: <Widget>[
           Opacity(
@@ -84,6 +86,13 @@ class _BackdropTitle extends AnimatedWidget {
               curve: Interval(0.5, 1.0),
             ).value,
             child: frontTitle,
+          ),
+          Opacity(
+            opacity: CurvedAnimation(
+              parent: animation,
+              curve: Interval(0.5, 1.0),
+              ).value,
+              child: frontTitle,
           ),
         ],
       ),
@@ -98,7 +107,8 @@ class Backdrop extends StatefulWidget {
   final Widget frontTitle;
   final Widget backTitle;
 
-  const Backdrop({@required this.currentCategory,
+  const Backdrop(
+      {@required this.currentCategory,
       @required this.frontPanel,
       @required this.backPanel,
       @required this.frontTitle,
@@ -109,17 +119,17 @@ class Backdrop extends StatefulWidget {
         assert(frontTitle != null),
         assert(backPanel != null);
 
-    @override
-    _BackdropState createState() => _BackdropState();     
+  @override
+  _BackdropState createState() => _BackdropState();
 }
 
-class _BackdropState extends State <Backdrop>
-with SingleTickerProviderStateMixin{
+class _BackdropState extends State<Backdrop>
+    with SingleTickerProviderStateMixin {
   final GlobalKey _backdropKey = GlobalKey(debugLabel: 'Backdrop');
   AnimationController _controller;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _controller = AnimationController(
       duration: Duration(milliseconds: 300),
@@ -129,14 +139,15 @@ with SingleTickerProviderStateMixin{
   }
 
   @override
-  void didUpdateWidget(Backdrop old){
+  void didUpdateWidget(Backdrop old) {
     super.didUpdateWidget(old);
-    if(widget.currentCategory != old.currentCategory){
+    if (widget.currentCategory != old.currentCategory) {
       setState(() {
         _controller.fling(
-          velocity: _backdropPanelVisible ? - _kFlingVelocity : _kFlingVelocity);
+            velocity:
+                _backdropPanelVisible ? -_kFlingVelocity : _kFlingVelocity);
       });
-    }else if(!_backdropPanelVisible){
+    } else if (!_backdropPanelVisible) {
       setState(() {
         _controller.fling(velocity: _kFlingVelocity);
       });
@@ -144,56 +155,61 @@ with SingleTickerProviderStateMixin{
   }
 
   @override
-  void dispose(){
+  void dispose() {
     _controller.dispose();
     super.dispose();
   }
 
-  bool get _backdropPanelVisible{
+  bool get _backdropPanelVisible {
     final AnimationStatus status = _controller.status;
-    return status == AnimationStatus.completed || status == AnimationStatus.forward;
+    return status == AnimationStatus.completed ||
+        status == AnimationStatus.forward;
   }
 
-  void _toggleBackdropPanelVisibility(){
+  void _toggleBackdropPanelVisibility() {
     FocusScope.of(context).requestFocus(FocusNode());
     _controller.fling(
-      velocity: _backdropPanelVisible ? - _kFlingVelocity : _kFlingVelocity
-    );
+        velocity: _backdropPanelVisible ? -_kFlingVelocity : _kFlingVelocity);
   }
 
-  double get _backdropHeight{
+  double get _backdropHeight {
     final RenderBox renderBox = _backdropKey.currentContext.findRenderObject();
     return renderBox.size.height;
   }
 
-  void _handleDragUpdate(DragUpdateDetails details){
-    if(_controller.isAnimating || _controller.status == AnimationStatus.completed) return;
+  //Para cerrar el panel, el usuario tiene que tocar el header del backdrop o el icono de menu
+  void _handleDragUpdate(DragUpdateDetails details) {
+    if (_controller.isAnimating ||
+        _controller.status == AnimationStatus.completed) return;
 
     _controller.value -= details.primaryDelta / _backdropHeight;
   }
 
-  void _handleDragEnd(DragEndDetails details){
-    if(_controller.isAnimating || _controller.status == AnimationStatus.completed) return;
+  void _handleDragEnd(DragEndDetails details) {
+    if (_controller.isAnimating ||
+        _controller.status == AnimationStatus.completed) return;
 
-    final double flingVelocity = details.velocity.pixelsPerSecond.dy / _backdropHeight;
-   
-    if(flingVelocity < 0.0)
-    _controller.fling(velocity: math.max(_kFlingVelocity, -flingVelocity));
-    else if(flingVelocity > 0.0)
-    _controller.fling(velocity: math.min(-_kFlingVelocity, -flingVelocity));
+    final double flingVelocity =
+        details.velocity.pixelsPerSecond.dy / _backdropHeight;
+
+    if (flingVelocity < 0.0)
+      _controller.fling(velocity: math.max(_kFlingVelocity, -flingVelocity));
+    else if (flingVelocity > 0.0)
+      _controller.fling(velocity: math.min(-_kFlingVelocity, -flingVelocity));
     else
-    _controller.fling(
-      velocity: _controller.value < 0.5 ? -_kFlingVelocity : _kFlingVelocity
-    );
+      _controller.fling(
+          velocity:
+              _controller.value < 0.5 ? -_kFlingVelocity : _kFlingVelocity);
   }
 
-  Widget _buildStack (BuildContext context, BoxConstraints constraints){
+  Widget _buildStack(BuildContext context, BoxConstraints constraints) {
     const double panelTitleHeight = 48.0;
     final Size panelSize = constraints.biggest;
     final double panelTop = panelSize.height - panelTitleHeight;
 
     Animation<RelativeRect> panelAnimation = RelativeRectTween(
-      begin: RelativeRect.fromLTRB(0.0, panelTop, 0.0, panelTop - panelSize.height),
+      begin: RelativeRect.fromLTRB(
+          0.0, panelTop, 0.0, panelTop - panelSize.height),
       end: RelativeRect.fromLTRB(0.0, 0.0, 0.0, 0.0),
     ).animate(_controller.view);
 
@@ -219,7 +235,7 @@ with SingleTickerProviderStateMixin{
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: widget.currentCategory.color,
@@ -236,10 +252,10 @@ with SingleTickerProviderStateMixin{
           frontTitle: widget.frontTitle,
           backTitle: widget.backTitle,
         ),
-        ),
-        body: LayoutBuilder(
-          builder: _buildStack,
-        ),
+      ),
+      body: LayoutBuilder(
+        builder: _buildStack,
+      ),
       resizeToAvoidBottomPadding: false,
     );
   }

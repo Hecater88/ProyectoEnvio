@@ -9,6 +9,8 @@ class CategoryTile extends StatelessWidget {
   final Category category;
   final ValueChanged<Category> onTap;
 
+//CategoryTile shows the nameand color of a Category
+//Tapping on it brings you to the unit converter
   const CategoryTile({
     Key key,
     @required this.category,
@@ -17,6 +19,7 @@ class CategoryTile extends StatelessWidget {
         assert(onTap != null),
         super(key: key);
 
+  //Este contexto describe como va ser un widget 
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
