@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:category_widget/category.dart';
@@ -70,6 +71,8 @@ class _BackdropTitle extends AnimatedWidget {
     this.backTitle,
   }) : super(key: key, listenable: listenable);
 
+
+ @override
   Widget build(BuildContext context) {
     final Animation<double> animation = this.listenable;
     return DefaultTextStyle(
@@ -100,6 +103,8 @@ class _BackdropTitle extends AnimatedWidget {
   }
 }
 
+//Build backdrop
+//Backdrop widget has two panel, front and back
 class Backdrop extends StatefulWidget {
   final Category currentCategory;
   final Widget frontPanel;
@@ -131,6 +136,8 @@ class _BackdropState extends State<Backdrop>
   @override
   void initState() {
     super.initState();
+    //Creates an AnimationController that ca allows for animation for backdroppanel.
+    //0.00 means front panel is hidden mode, 1.0 means that the front panel is open
     _controller = AnimationController(
       duration: Duration(milliseconds: 300),
       value: 1.0,
@@ -256,7 +263,6 @@ class _BackdropState extends State<Backdrop>
       body: LayoutBuilder(
         builder: _buildStack,
       ),
-      resizeToAvoidBottomPadding: false,
     );
   }
 }

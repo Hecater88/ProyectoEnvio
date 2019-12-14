@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:category_widget/unit.dart';
 import 'package:meta/meta.dart';
+
+import 'package:category_widget/unit.dart';
+
 
 //Custom widget llamado Category
 class Category {

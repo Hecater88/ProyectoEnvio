@@ -67,6 +67,9 @@ class _UnitConverterState extends State<UnitConverter> {
       _fromValue = widget.category.units[0];
       _toValue = widget.category.units[1];
     });
+    if(_inputValue != null){
+      _updateConversion();
+    }
   }
 
   String _format(double conversion) {
@@ -175,6 +178,7 @@ class _UnitConverterState extends State<UnitConverter> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           TextField(
+            key: _inputKey,
             style: Theme.of(context).textTheme.display1,
             decoration: InputDecoration(
               labelStyle: Theme.of(context).textTheme.display1,
@@ -234,7 +238,20 @@ class _UnitConverterState extends State<UnitConverter> {
 
     return Padding(
       padding: _padding,
-      child: converter,
+      child: OrientationBuilder(
+        builder:(BuildContext context, Orientation orientation){
+          if(orientation == Orientation.portrait){
+            return converter;
+          }else{
+            return Center(
+              child: Container(
+                width: 450.0,
+                child: converter,
+              ),
+            );
+          }
+        }
+      ),
     );
   }
 }

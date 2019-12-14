@@ -1,13 +1,16 @@
-import 'package:category_widget/category_tile.dart';
-import 'package:category_widget/unit_converter.dart';
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:category_widget/category.dart';
 import 'package:category_widget/unit.dart';
 import 'package:category_widget/backdrop.dart';
+import 'package:category_widget/category_tile.dart';
+import 'package:category_widget/unit_converter.dart';
 
 //Este es el home de la aplicacion
 //Es un header y una lista de [Category]
-class CategoryRoute extends StatefulWidget{
+class CategoryRoute extends StatefulWidget {
   const CategoryRoute();
 
   @override
@@ -18,23 +21,12 @@ class _CategoryRouteState extends State<CategoryRoute> {
   Category _defaultCategory;
   Category _currentCategory;
 
-  final _categories =<Category>[];
+  final _categories = <Category>[];
 
-  static const _categoryNames = <String>[
-    'Length',
-    'Area',
-    'Volume',
-    'Mass',
-    'Time',
-    'Digital Storage',
-    'Energy',
-    'Currency',
-  ];
-
-  static const _baseColors =<Color>[
-    ColorSwatch(0xFF6AB7A8,{
+  static const _baseColors = <Color>[
+    ColorSwatch(0xFF6AB7A8, {
       'highlight': Color(0xFF6AB7A8),
-      'splash':Color(0xFF0ABC9B),
+      'splash': Color(0xFF0ABC9B),
     }),
     ColorSwatch(0xFFFFD28E, {
       'highlight': Color(0xFFFFD28E),
@@ -65,52 +57,70 @@ class _CategoryRouteState extends State<CategoryRoute> {
       'splash': Color(0xFFF94D56),
       'error': Color(0xFF912D2D),
     }),
-   
-
   ];
 
   @override
-  void initState(){
-    super.initState();
-    for(var i = 0; i<_categoryNames.length; i++){
-      var category = Category(
-        name: _categoryNames[i],
-        color: _baseColors[i],
-        iconLocation: Icons.cake,
-        units: _retrieveUnitList(_categoryNames[i]),
-      );
-      if(i == 0){
-        _defaultCategory = category;
-      }
-      _categories.add(category);
-      
+  Future<void> didChangeDependencies() async {
+    super.didChangeDependencies();
+    if (_categories.isEmpty) {
+      await _retrieveLocalCategories();
     }
   }
 
+  Future<void> _retrieveLocalCategories() async {
+    final json = DefaultAssetBundle.of(context)
+        .loadString('assets/data/regular_units.json');
+
+    final data = JsonDecoder().convert(await json);
+    if (data is! Map) {
+      throw ('Data retrieved from API is not a Map');
+    }
+
+    var categoryIndex = 0;
+    data.keys.forEach((key) {
+      final List<Unit> units =
+          data[key].map<Unit>((dynamic data) => Unit.formJson(data)).toList();
+
+      var category = Category(
+        name: key,
+        units: units,
+        color: _baseColors[categoryIndex],
+        iconLocation: Icons.cake,
+      );
+      setState(() {
+        if (categoryIndex == 0) {
+          _defaultCategory = category;
+        }
+        _categories.add(category);
+      });
+      categoryIndex += 1;
+    });
+  }
+
   //funcion to call when a Category is tapped.
-  void _onCategoryTap(Category category){
-    setState((){
+  void _onCategoryTap(Category category) {
+    setState(() {
       _currentCategory = category;
     });
   }
 
   //Makes the correct number of rows for the list view
-  Widget _buildCategoryWidgets(Orientation deviceOrientation){
-    if(deviceOrientation == Orientation.portrait){
-    return ListView.builder(
-        itemBuilder: (BuildContext context, int index){
+  Widget _buildCategoryWidgets(Orientation deviceOrientation) {
+    if (deviceOrientation == Orientation.portrait) {
+      return ListView.builder(
+        itemBuilder: (BuildContext context, int index) {
           return CategoryTile(
-           category: _categories[index],
-           onTap: _onCategoryTap, 
+            category: _categories[index],
+            onTap: _onCategoryTap,
           );
-      },
-      itemCount: _categories.length,
-    );
-    }else{
+        },
+        itemCount: _categories.length,
+      );
+    } else {
       return GridView.count(
         crossAxisCount: 2,
         childAspectRatio: 3.0,
-        children: _categories.map((Category c){
+        children: _categories.map((Category c) {
           return CategoryTile(
             category: c,
             onTap: _onCategoryTap,
@@ -120,38 +130,37 @@ class _CategoryRouteState extends State<CategoryRoute> {
     }
   }
 
-//Return a list of mock
-  List<Unit> _retrieveUnitList(String categoryName){
-    return List.generate(10,(int i){
-      i += 1;
-      return Unit(
-        name: '$categoryName Unit $i',
-        conversion: i.toDouble(),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    assert(debugCheckHasMediaQuery(context));
-   final listView = Padding(
-     padding: EdgeInsets.only(
-       left: 8.0,
-       right: 8.0,
-       bottom: 48.0,
-     ),
-     child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
-   );
+    if (_categories.isEmpty) {
+      return Center(
+        child: Container(
+          height: 180.0,
+          width: 180.0,
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
-   return Backdrop(
-     currentCategory: 
-     _currentCategory == null ? _defaultCategory : _currentCategory,
-     frontPanel: _currentCategory == null
-     ? UnitConverter(category: _defaultCategory)
-     :UnitConverter(category: _currentCategory),
-     backPanel: listView,
-     frontTitle: Text('Unit Converter'),
-     backTitle: Text('Select a Category'),
-   );
+    assert(debugCheckHasMediaQuery(context));
+    final listView = Padding(
+      padding: EdgeInsets.only(
+        left: 8.0,
+        right: 8.0,
+        bottom: 48.0,
+      ),
+      child: _buildCategoryWidgets(MediaQuery.of(context).orientation),
+    );
+
+    return Backdrop(
+      currentCategory:
+          _currentCategory == null ? _defaultCategory : _currentCategory,
+      frontPanel: _currentCategory == null
+          ? UnitConverter(category: _defaultCategory)
+          : UnitConverter(category: _currentCategory),
+      backPanel: listView,
+      frontTitle: Text('Unit Converter'),
+      backTitle: Text('Select a Category'),
+    );
   }
 }
